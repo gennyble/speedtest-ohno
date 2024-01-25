@@ -20,8 +20,7 @@ const speedTiers = [
 	[10000, 100000]
 ];
 
-const server = "sonic.nyble.dev:1256";
-//const server = "192.168.1.28:1256";
+const server = "localhost:1256";
 
 let worker = undefined;
 
