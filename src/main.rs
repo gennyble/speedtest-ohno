@@ -1,3 +1,5 @@
+use std::time::{Duration, Instant};
+
 use axum::{
 	extract::{
 		ws::{Message, WebSocket},
@@ -23,7 +25,7 @@ async fn speedtest(wsu: WebSocketUpgrade) -> Response {
 }
 
 async fn speedtest_ws(mut ws: WebSocket) {
-	let chunks = 100;
+	let testLength = Duration::from_secs(15);
 	let chunkSize = 1024;
 
 	// prepare for download
@@ -39,15 +41,30 @@ async fn speedtest_ws(mut ws: WebSocket) {
 
 	// Tell the client what we're going to do
 	ws.send(Message::Text(format!(
-		r#"{{ "chunkCount": {chunks}, "chunkSize": {chunkSize} }}"#,
+		r#"{{ "type": "download-start", "chunkSize": {chunkSize} }}"#,
 	)))
 	.await
 	.unwrap();
 
 	// and then start doing it
-	for chunk_idx in 0..chunks {
+	let mut chunks_sent = 0;
+	let start = Instant::now();
+	loop {
 		ws.send(Message::Binary(buff.clone())).await.unwrap();
+		chunks_sent += 1;
+
+		if start.elapsed() >= testLength {
+			println!("[ws::{id}] is done testing. sent {chunks_sent} chunks!");
+			break;
+		}
 	}
+
+	// Let them know we're done
+	ws.send(Message::Text(String::from(
+		r#"{ "type": "download-stop" }"#,
+	)))
+	.await
+	.unwrap();
 
 	while let Some(_msg) = ws.recv().await {
 		println!("[ws::{id}] received message!");

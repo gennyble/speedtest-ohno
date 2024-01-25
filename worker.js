@@ -12,11 +12,9 @@ onmessage = function (e) {
 };
 
 function downloadTest(server) {
-	let running = false;
-	let startTime = undefined;
-	let chunkCount = 0;
-	let remainingChunks = 0;
-	let chunkSize = 0; // in kilobytes
+	let start_time = undefined;
+	let chunk_size = 0; // in kilobytes
+	let chunk_count = 0;
 
 	const socket = new WebSocket(`ws://${server}/speedtest/download`);
 
@@ -24,44 +22,47 @@ function downloadTest(server) {
 		console.log("[worker::ws] connection opened!");
 	});
 
+	let report_task = setInterval(() => {
+		let current_time = Date.now();
+
+		postMessage({
+			"type": "download-progress",
+			"start": start_time,
+			"current": current_time,
+			"chunkCount": chunk_count,
+			"chunkSize": chunk_size
+		});
+	}, 250);
+
 	socket.addEventListener("message", (event) => {
 		console.log("[worker::ws] got message!");
 
 		const msg = event.data;
 
 		if (typeof msg === "string") {
-			if (running) {
-				console.log("didn't expect to receive text data while running test. bailing!");
+			console.log(msg);
+			const json = JSON.parse(msg);
 
+			if (json["type"] === "download-start") {
+				start_time = Date.now();
+				chunk_size = json["chunkSize"];
+
+				console.log(`[worker::ws] starting download! chunk_size ${chunk_size}KB`);
+			} else if (json["type"] === "download-stop") {
+				let stop_time = Date.now();
 				socket.close();
-				postMessage("shutdown");
-			} else {
-				running = true;
-				startTime = Date.now();
 
-				const json_msg = JSON.parse(msg);
-				chunkCount = json_msg["chunkCount"];
-				remainingChunks = json_msg["chunkCount"];
-				chunkSize = json_msg["chunkSize"];
-
-				console.log(`[worker::ws] ${remainingChunks} chunks of size ${chunkSize}KB`);
+				clearInterval(report_task);
+				postMessage({
+					"type": "download-stop",
+					"chunkCount": chunk_count,
+					"chunkSize": chunk_size,
+					"start": start_time,
+					"stop": stop_time
+				});
 			}
 		} else {
-			remainingChunks--;
-
-			if (remainingChunks <= 0) {
-				let stop = Date.now();
-				let delta = stop - startTime;
-
-				postMessage({
-					"type": "doneDownload",
-					"chunkCount": chunkCount,
-					"chunkSize": chunkSize,
-					"start": startTime,
-					"stop": stop
-				});
-				socket.close();
-			}
+			chunk_count++;
 		}
 	});
 }
