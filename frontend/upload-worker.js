@@ -22,7 +22,7 @@ let sent_chunks = 0;
 let report_task = undefined;
 
 function uploadTest(server) {
-	socket = new WebSocket(`ws://${server}/speedtest/upload`);
+	socket = new WebSocket(`wss://${server}/speedtest/upload`);
 
 	socket.addEventListener("open", (event) => {
 		console.log("[worker::ws] upload connection opened!");

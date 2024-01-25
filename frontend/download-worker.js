@@ -16,7 +16,7 @@ function downloadTest(server) {
 	let chunk_size = 0; // in kilobytes
 	let chunk_count = 0;
 
-	const socket = new WebSocket(`ws://${server}/speedtest/download`);
+	const socket = new WebSocket(`wss://${server}/speedtest/download`);
 
 	socket.addEventListener("open", (event) => {
 		console.log("[worker::ws] download connection opened!");

@@ -12,7 +12,7 @@ onmessage = function (e) {
 };
 
 function pingTest(server) {
-	const socket = new WebSocket(`ws://${server}/speedtest/ping`);
+	const socket = new WebSocket(`wss://${server}/speedtest/ping`);
 
 	let iterations = 100;
 
