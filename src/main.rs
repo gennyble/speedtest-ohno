@@ -60,16 +60,16 @@ async fn main() {
 	}
 }
 
+const TEST_LENGTH: Duration = Duration::from_secs(15);
+const CHUNK_SIZE: usize = 1024;
+
 async fn speedtest(wsu: WebSocketUpgrade) -> Response {
 	wsu.on_upgrade(speedtest_ws)
 }
 
 async fn speedtest_ws(mut ws: WebSocket) {
-	let testLength = Duration::from_secs(15);
-	let chunkSize = 1024;
-
 	// prepare for download
-	let mut buff = vec![0u8; 1024 * chunkSize];
+	let mut buff = vec![0u8; 1024 * CHUNK_SIZE];
 	let mut rng = rand::rngs::StdRng::from_entropy();
 	rng.fill(&mut buff[..]);
 
@@ -81,7 +81,7 @@ async fn speedtest_ws(mut ws: WebSocket) {
 
 	// Tell the client what we're going to do
 	ws.send(Message::Text(format!(
-		r#"{{ "type": "download-start", "chunkSize": {chunkSize} }}"#,
+		r#"{{ "type": "download-start", "chunkSize": {CHUNK_SIZE} }}"#,
 	)))
 	.await
 	.unwrap();
@@ -93,7 +93,7 @@ async fn speedtest_ws(mut ws: WebSocket) {
 		ws.send(Message::Binary(buff.clone())).await.unwrap();
 		chunks_sent += 1;
 
-		if start.elapsed() >= testLength {
+		if start.elapsed() >= TEST_LENGTH {
 			println!("[ws::{id}] is done testing. sent {chunks_sent} chunks!");
 			break;
 		}
@@ -154,11 +154,9 @@ async fn upload_ws(mut ws: WebSocket) {
 		.map(char::from)
 		.collect();
 
-	let test_length = 5;
-	let chunk_size = 1024;
-
 	let start_msg = format!(
-		r#"{{ "type": "upload-start", "length": {test_length}, "chunkSize": {chunk_size} }}"#
+		r#"{{ "type": "upload-start", "length": {}, "chunkSize": {CHUNK_SIZE} }}"#,
+		TEST_LENGTH.as_secs()
 	);
 
 	println!("[ws::{id}] telling client to start upload test!");
@@ -179,7 +177,7 @@ async fn upload_ws(mut ws: WebSocket) {
 
 				match start_time {
 					None => start_time = Some(SystemTime::now()),
-					Some(start) if start.elapsed().unwrap() >= Duration::from_secs(test_length) => {
+					Some(start) if start.elapsed().unwrap() >= TEST_LENGTH => {
 						let delta = start.elapsed().unwrap().as_millis();
 						let stop_msg = format!(
 							r#"{{ "type": "upload-stop", "chunkCount": {chunks_received}, "delta": {delta} }}"#
@@ -187,7 +185,7 @@ async fn upload_ws(mut ws: WebSocket) {
 
 						println!("[ws::{id}] telling client to stop upload test!");
 						println!(
-							"[ws::{id}] received {chunks_received} chunks of size {chunk_size}. in {delta}ms"
+							"[ws::{id}] received {chunks_received} chunks of size {CHUNK_SIZE}. in {delta}ms"
 						);
 						ws.send(Message::Text(stop_msg)).await.unwrap();
 					}
