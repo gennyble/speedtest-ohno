@@ -14,13 +14,13 @@ onmessage = function (e) {
 function pingTest(server) {
 	const socket = new WebSocket(`ws://${server}/speedtest/ping`);
 
-	let iterations = 50;
+	let iterations = 100;
 
 	let sendPing = () => {
 		setTimeout(() => {
 			let message = { "time": Date.now() };
 			socket.send(JSON.stringify(message));
-		}, 10);
+		}, 50);
 	};
 
 	socket.addEventListener("message", (event) => {

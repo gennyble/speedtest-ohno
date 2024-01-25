@@ -25,7 +25,7 @@ function uploadTest(server) {
 	socket = new WebSocket(`ws://${server}/speedtest/upload`);
 
 	socket.addEventListener("open", (event) => {
-		console.log("[worker::ws] connection opened!");
+		console.log("[worker::ws] upload connection opened!");
 	});
 
 	socket.addEventListener("message", (event) => {
@@ -90,10 +90,9 @@ function start_report() {
 
 		postMessage({
 			"type": "upload-progress",
-			"start": start_time,
-			"current": current_time,
+			"delta": current_time - start_time,
 			"chunkCount": sent_chunks,
 			"chunkSize": chunk_size
 		});
-	}, 250);
+	}, 100);
 }

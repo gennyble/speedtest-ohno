@@ -19,28 +19,25 @@ function downloadTest(server) {
 	const socket = new WebSocket(`ws://${server}/speedtest/download`);
 
 	socket.addEventListener("open", (event) => {
-		console.log("[worker::ws] connection opened!");
+		console.log("[worker::ws] download connection opened!");
 	});
 
 	let report_task = setInterval(() => {
 		let current_time = Date.now();
+		let delta = current_time - start_time;
 
 		postMessage({
 			"type": "download-progress",
-			"start": start_time,
-			"current": current_time,
+			"delta": delta,
 			"chunkCount": chunk_count,
 			"chunkSize": chunk_size
 		});
-	}, 250);
+	}, 100);
 
 	socket.addEventListener("message", (event) => {
-		console.log("[worker::ws] got message!");
-
 		const msg = event.data;
 
 		if (typeof msg === "string") {
-			console.log(msg);
 			const json = JSON.parse(msg);
 
 			if (json["type"] === "download-start") {
@@ -57,8 +54,7 @@ function downloadTest(server) {
 					"type": "download-stop",
 					"chunkCount": chunk_count,
 					"chunkSize": chunk_size,
-					"start": start_time,
-					"stop": stop_time
+					"delta": stop_time - start_time,
 				});
 			}
 		} else {
@@ -66,11 +62,3 @@ function downloadTest(server) {
 		}
 	});
 }
-
-/*
-data format:
-{
-	"chunkCount": number,
-	"chunkSize": number // size in kilobytes
-}
-*/

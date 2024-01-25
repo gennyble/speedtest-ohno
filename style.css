@@ -1,3 +1,15 @@
+@font-face {
+	font-family: Lato;
+	src: url(Lato-Light.ttf);
+	font-weight: 200;
+}
+
+@font-face {
+	font-family: Lato;
+	src: url(Lato-Regular.ttf);
+	font-weight: 400;
+}
+
 * {
 	box-sizing: border-box;
 }
@@ -6,19 +18,20 @@ body {
 	margin: 0;
 	padding: 0;
 	width: 100%;
+	font-family: 'Lato', sans-serif;
 }
 
 main {
-	max-width: 24rem;
+	max-width: 26rem;
+	padding: 12px;
 	margin: 0 auto;
 }
 
-h1 {
+main h1 {
+	font-size: 2rem;
+	width: 100%;
+	text-align: center;
 	border-bottom: 1px solid black;
-}
-
-details {
-	margin-top: 1rem;
 }
 
 #numbers {
@@ -28,8 +41,8 @@ details {
 
 .speed,
 #ping {
-	margin-top: 1rem;
-	font-weight: bold;
+	margin-top: 12px;
+	font-weight: normal;
 	font-size: 2rem;
 }
 
@@ -44,7 +57,73 @@ details {
 	background-color: #eee;
 }
 
-main h1 {
+.meter-inner {
+	height: 100%;
+	width: 0%;
+	background-color: #3a8;
+}
+
+button {
+	display: block;
 	width: 100%;
-	text-align: center;
+
+	margin: 12px auto;
+
+	border: 1px solid black;
+
+	font-size: 2rem;
+	font-weight: 400;
+	font-family: Lato;
+
+	background-color: unset;
+
+	/* blur outwards so it looks slightly lifted */
+	box-shadow: 0 0 3px black;
+}
+
+button:hover {
+	/* very slightly lessen the blur. they've put their
+	   finger on it and it's slightly depressed */
+	box-shadow: 0 0 2px black;
+}
+
+button:active {
+	/* action has been taken! move the blur to the inside,
+	   top-left corner with a heavy spread. It looks
+	   entirely depressed! sunk into the page, even */
+	box-shadow: 1px 1px 5px inset black;
+}
+
+button:disabled {
+	box-shadow: none;
+	background-color: #ededed;
+}
+
+details {
+	margin-top: 12px;
+}
+
+details h2 {
+	font-size: 1rem;
+	font-weight: bold;
+	/* i do not want the margin to collapse with the <p> */
+	padding: 4px 0;
+	margin: 0;
+}
+
+details p {
+	margin: 0;
+	margin-bottom: 8px;
+	padding: 0;
+}
+
+.note {
+	width: 50%;
+	margin-left: auto;
+	font-size: 0.85rem;
+	text-align: right;
+}
+
+.note>a {
+	color: black;
 }

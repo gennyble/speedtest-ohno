@@ -2,7 +2,8 @@
 <html>
 
 <head>
-	<script src="main.js"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="main.js" defer></script>
 	<link rel="stylesheet" href="style.css" />
 </head>
 
@@ -22,8 +23,13 @@
 			<a id="ping">0ms</a>
 		</section>
 
+		<button onclick="run()" id="start-button">
+			Test My Speeds!
+		</button>
+
 		<details>
 			<summary>test information</summary>
+			<h2>general</h2>
 			<p>
 				Tests are performed over a Websocket connection.
 			</p>
@@ -32,7 +38,25 @@
 				reports how big the chunks it's sending are and the client uses
 				that size and the number of chunks received to calculate the throughput.
 			</p>
+			<h2>upload</h2>
+			<p>
+				The client&mdash;your browser&mdash;sends random data to the speedtest
+				server as fast as it can. Upload speeds are calculated the same
+				way as download speeds.
+			</p>
+			<p>
+				While the upload test is running the number displayed could be
+				slightly incorrect. The number of chunks sent to the server are
+				counted and used for the in-progress reporting. When the test
+				finishes, the server reports how many chunks it received and
+				how long it took.
+			</p>
 		</details>
+
+		<p class="note">
+			the font is <a href="https://www.latofonts.com/">Lato</a>, licensed
+			under the OFL, and hosted locally.
+		</p>
 	</main>
 </body>
 
