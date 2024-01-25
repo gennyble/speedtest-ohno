@@ -1,5 +1,5 @@
 function run() {
-	let worker = new Worker("worker.js");
+	let worker = new Worker("download-worker.js");
 
 	worker.postMessage({ "type": "startDownload", "server": "192.168.1.28:8000" });
 
@@ -41,6 +41,27 @@ function run() {
 			speed.innerText = `${throughput} Mbps`;
 
 			console.log(`${delta_seconds}s - ${throughput} Mbps`);
+		}
+	});
+}
+
+function runPing() {
+	let worker = new Worker("ping-worker.js");
+
+	worker.postMessage({ "type": "startPing", "server": "192.168.1.28:8000" });
+
+	worker.addEventListener("message", (event) => {
+		const msg = event.data;
+		const kind = msg["type"];
+
+		if (kind === "ping-start") {
+			console.log("started ping test");
+		} else if (kind === "ping-progress") {
+			let roundtrip = msg["roundtrip"];
+			console.log(`${roundtrip}ms`);
+		} else if (kind === "ping-stop") {
+			console.log("stopped ping test");
+			worker.terminate();
 		}
 	});
 }

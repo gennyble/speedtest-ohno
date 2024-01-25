@@ -14,7 +14,9 @@ use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() {
-	let ohno = Router::new().route("/speedtest/download", get(speedtest));
+	let ohno = Router::new()
+		.route("/speedtest/download", get(speedtest))
+		.route("/speedtest/ping", get(ping));
 
 	let listen = TcpListener::bind("0.0.0.0:8000").await.unwrap();
 	axum::serve(listen, ohno).await.unwrap();
@@ -69,6 +71,34 @@ async fn speedtest_ws(mut ws: WebSocket) {
 	while let Some(_msg) = ws.recv().await {
 		println!("[ws::{id}] received message!");
 		continue;
+	}
+
+	println!("[ws::{id}] stream closed!");
+}
+
+async fn ping(wsu: WebSocketUpgrade) -> Response {
+	wsu.on_upgrade(ping_ws)
+}
+
+async fn ping_ws(mut ws: WebSocket) {
+	let rng = rand::rngs::StdRng::from_entropy();
+	let id: String = rng
+		.sample_iter(&rand::distributions::Alphanumeric)
+		.take(6)
+		.map(char::from)
+		.collect();
+
+	while let Some(msg) = ws.recv().await {
+		let msg = msg.unwrap();
+
+		match msg {
+			Message::Close(_) => {
+				break;
+			}
+			msg => {
+				ws.send(msg).await.unwrap();
+			}
+		}
 	}
 
 	println!("[ws::{id}] stream closed!");
