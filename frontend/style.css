@@ -14,11 +14,32 @@
 	box-sizing: border-box;
 }
 
+:root {
+	--text: black;
+	--text-dim: #333;
+	--back: white;
+	--back-dim: #eee;
+	--acnt: #3a8;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--text: white;
+		--text-dim: #dadada;
+		--back: #112;
+		--back-dim: #403838;
+		--acnt: salmon;
+	}
+}
+
 body {
 	margin: 0;
 	padding: 0;
 	width: 100%;
 	font-family: 'Lato', sans-serif;
+
+	color: var(--text);
+	background-color: var(--back);
 }
 
 main {
@@ -31,7 +52,7 @@ main h1 {
 	font-size: 2rem;
 	width: 100%;
 	text-align: center;
-	border-bottom: 1px solid black;
+	border-bottom: 1px solid var(--text);
 }
 
 #numbers {
@@ -53,14 +74,14 @@ main h1 {
 .meter {
 	width: 100%;
 	height: 1rem;
-	border: 1px solid black;
-	background-color: #eee;
+	border: 1px solid var(--text);
+	background-color: var(--back-dim);
 }
 
 .meter-inner {
 	height: 100%;
 	width: 0%;
-	background-color: #3a8;
+	background-color: var(--acnt);
 }
 
 button {
@@ -69,8 +90,9 @@ button {
 
 	margin: 12px auto;
 
-	border: 1px solid black;
+	border: 1px solid var(--text);
 
+	color: var(--text);
 	font-size: 2rem;
 	font-weight: 400;
 	font-family: Lato;
@@ -78,25 +100,25 @@ button {
 	background-color: unset;
 
 	/* blur outwards so it looks slightly lifted */
-	box-shadow: 0 0 3px black;
+	box-shadow: 0 0 3px var(--text);
 }
 
 button:hover {
 	/* very slightly lessen the blur. they've put their
 	   finger on it and it's slightly depressed */
-	box-shadow: 0 0 2px black;
+	box-shadow: 0 0 2px var(--text);
 }
 
 button:active {
 	/* action has been taken! move the blur to the inside,
 	   top-left corner with a heavy spread. It looks
 	   entirely depressed! sunk into the page, even */
-	box-shadow: 1px 1px 5px inset black;
+	box-shadow: 1px 1px 5px inset var(--text);
 }
 
 button:disabled {
 	box-shadow: none;
-	background-color: #ededed;
+	background-color: var(--back-dim);
 }
 
 details {
@@ -125,5 +147,5 @@ details p {
 }
 
 .note>a {
-	color: black;
+	color: var(--text);
 }
