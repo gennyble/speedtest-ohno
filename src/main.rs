@@ -1,4 +1,8 @@
-use std::time::{Duration, Instant, SystemTime};
+use std::{
+	net::SocketAddr,
+	str::FromStr,
+	time::{Duration, Instant, SystemTime},
+};
 
 use axum::{
 	extract::{
@@ -9,19 +13,51 @@ use axum::{
 	routing::get,
 	Router,
 };
+use axum_server::tls_rustls::RustlsConfig;
 use rand::{Rng, SeedableRng};
-use serde::Serialize;
-use tokio::net::TcpListener;
+use tokio::join;
 
 #[tokio::main]
 async fn main() {
+	let cert = std::env::args().nth(1);
+	let pkey = std::env::args().nth(2);
+
 	let ohno = Router::new()
 		.route("/speedtest/download", get(speedtest))
 		.route("/speedtest/ping", get(ping))
 		.route("/speedtest/upload", get(upload));
 
-	let listen = TcpListener::bind("0.0.0.0:8000").await.unwrap();
-	axum::serve(listen, ohno).await.unwrap();
+	let addr = SocketAddr::from(([0, 0, 0, 0], 1256));
+	let addr6: SocketAddr = std::net::SocketAddrV6::from_str("[::]:1256")
+		.unwrap()
+		.into();
+
+	if pkey.is_some() {
+		println!("using TLS encryption!");
+
+		let rtls_config = RustlsConfig::from_pem_file(cert.unwrap(), pkey.unwrap())
+			.await
+			.unwrap();
+
+		println!("listening on {addr}");
+		let serve4 = axum_server::bind_rustls(addr, rtls_config.clone())
+			.serve(ohno.clone().into_make_service());
+		println!("listening on {addr6}");
+		let serve6 = axum_server::bind_rustls(addr6, rtls_config).serve(ohno.into_make_service());
+
+		let (res4, res6) = join!(serve4, serve6);
+		res4.unwrap();
+		res6.unwrap();
+	} else {
+		println!("listening on {addr}");
+		let serve4 = axum_server::bind(addr).serve(ohno.clone().into_make_service());
+		println!("listening on {addr6}");
+		let serve6 = axum_server::bind(addr6).serve(ohno.into_make_service());
+
+		let (res4, res6) = join!(serve4, serve6);
+		res4.unwrap();
+		res6.unwrap();
+	}
 }
 
 async fn speedtest(wsu: WebSocketUpgrade) -> Response {
