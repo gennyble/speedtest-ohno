@@ -3,12 +3,36 @@
 
 <head>
 	<script src="main.js"></script>
+	<link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 	<main>
-		<h1>oh no! it's speed testing time</h1>
-		<h1 id="speed">0 Mbps</h1>
+		<h1>oh no!<br>it's speed testing time</h1>
+
+		<section id="numbers">
+			<a id="download-speed" class="speed">0 Mbps</a>
+			<div id="download-meter" class="meter">
+				<div id="download-meter-inner" class="meter-inner"></div>
+			</div>
+			<a id="upload-speed" class="speed">0 Mbps</a>
+			<div id="upload-meter" class="meter">
+				<div id="upload-meter-inner" class="meter-inner"></div>
+			</div>
+			<a id="ping">0ms</a>
+		</section>
+
+		<details>
+			<summary>test information</summary>
+			<p>
+				Tests are performed over a Websocket connection.
+			</p>
+			<p>
+				There is no attempt to account for packet overhead! The server
+				reports how big the chunks it's sending are and the client uses
+				that size and the number of chunks received to calculate the throughput.
+			</p>
+		</details>
 	</main>
 </body>
 

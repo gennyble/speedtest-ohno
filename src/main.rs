@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 
 use axum::{
 	extract::{
@@ -10,13 +10,15 @@ use axum::{
 	Router,
 };
 use rand::{Rng, SeedableRng};
+use serde::Serialize;
 use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() {
 	let ohno = Router::new()
 		.route("/speedtest/download", get(speedtest))
-		.route("/speedtest/ping", get(ping));
+		.route("/speedtest/ping", get(ping))
+		.route("/speedtest/upload", get(upload));
 
 	let listen = TcpListener::bind("0.0.0.0:8000").await.unwrap();
 	axum::serve(listen, ohno).await.unwrap();
@@ -98,6 +100,65 @@ async fn ping_ws(mut ws: WebSocket) {
 			msg => {
 				ws.send(msg).await.unwrap();
 			}
+		}
+	}
+
+	println!("[ws::{id}] stream closed!");
+}
+
+async fn upload(wsu: WebSocketUpgrade) -> Response {
+	wsu.on_upgrade(upload_ws)
+}
+
+async fn upload_ws(mut ws: WebSocket) {
+	let rng = rand::rngs::StdRng::from_entropy();
+	let id: String = rng
+		.sample_iter(&rand::distributions::Alphanumeric)
+		.take(6)
+		.map(char::from)
+		.collect();
+
+	let test_length = 5;
+	let chunk_size = 1024;
+
+	let start_msg = format!(
+		r#"{{ "type": "upload-start", "length": {test_length}, "chunkSize": {chunk_size} }}"#
+	);
+
+	println!("[ws::{id}] telling client to start upload test!");
+	ws.send(Message::Text(start_msg)).await.unwrap();
+
+	let mut start_time = None;
+	let mut chunks_received = 0;
+
+	while let Some(msg) = ws.recv().await {
+		let msg = msg.unwrap();
+
+		match msg {
+			Message::Close(_) => {
+				break;
+			}
+			Message::Binary(_) => {
+				chunks_received += 1;
+
+				match start_time {
+					None => start_time = Some(SystemTime::now()),
+					Some(start) if start.elapsed().unwrap() >= Duration::from_secs(test_length) => {
+						let delta = start.elapsed().unwrap().as_millis();
+						let stop_msg = format!(
+							r#"{{ "type": "upload-stop", "chunkCount": {chunks_received}, "delta": {delta} }}"#
+						);
+
+						println!("[ws::{id}] telling client to stop upload test!");
+						println!(
+							"[ws::{id}] received {chunks_received} chunks of size {chunk_size}. in {delta}ms"
+						);
+						ws.send(Message::Text(stop_msg)).await.unwrap();
+					}
+					_ => (),
+				}
+			}
+			_ => (),
 		}
 	}
 
