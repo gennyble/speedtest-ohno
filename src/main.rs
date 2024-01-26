@@ -16,19 +16,33 @@ use axum::{
 use axum_server::tls_rustls::RustlsConfig;
 use rand::{Rng, SeedableRng};
 use tokio::join;
+use confindent::Confindent;
 
 #[tokio::main]
 async fn main() {
-	let cert = std::env::args().nth(1);
-	let pkey = std::env::args().nth(2);
+        let conf_path = std::env::args().nth(1).unwrap_or(String::from("/etc/sonic.conf"));
+        let conf = match Confindent::from_file(&conf_path) {
+            Err(e) => {
+                eprintln!("error reading conf file at {conf_path}: {e}");
+                std::process::exit(1);
+            },
+            Ok(conf) => {
+                println!("successfully loaded conf at {conf_path}");
+                conf
+            }
+        };
+
+        let cert = conf.child_value("TlsCert");
+        let pkey = conf.child_value("TlsPkey");
+        let port: u16 = conf.child_parse("Port").unwrap();
 
 	let ohno = Router::new()
 		.route("/speedtest/download", get(speedtest))
 		.route("/speedtest/ping", get(ping))
 		.route("/speedtest/upload", get(upload));
 
-	let addr = SocketAddr::from(([0, 0, 0, 0], 1256));
-	let addr6: SocketAddr = std::net::SocketAddrV6::from_str("[::]:1256")
+	let addr = SocketAddr::from(([0, 0, 0, 0], port));
+	let addr6: SocketAddr = std::net::SocketAddrV6::from_str(&format!("[::]:{port}"))
 		.unwrap()
 		.into();
 
