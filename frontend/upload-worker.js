@@ -1,6 +1,4 @@
 onmessage = function (e) {
-	console.log("[worker] received message from main!");
-
 	const data = e.data;
 	const kind = data["type"];
 
@@ -13,12 +11,13 @@ onmessage = function (e) {
 
 let socket = undefined;
 
-let test_running = false;
 let buffer = undefined;
+
+let test_running = false;
 let chunk_size = 0;
+let sent_chunks = 0; // chunks we sent the server. used for in-progress reports
 let test_length = 0;
 let start_time = undefined;
-let sent_chunks = 0;
 let report_task = undefined;
 
 function uploadTest(server) {
@@ -62,6 +61,9 @@ function try_send() {
 
 	if (Date.now() - start_time > test_length * 1000) {
 		console.log("[worker] stopped from running overtime!");
+		// all we do here is set running to false. we don't report to the main
+		// thread and we don't cancel the report interval. we expect the server
+		// to eventually send the final data but it's just taking awhile.
 		test_running = false;
 	}
 

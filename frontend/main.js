@@ -8,8 +8,10 @@ const speedTiers = [
 	[10, 50],
 	// up to 100 Megabit
 	[50, 100],
+	// up to 500 Megabit
+	[100, 500],
 	// up to 1Gbit (max any connection I have access to)
-	[100, 1000],
+	[500, 1000],
 	// up to 2.5Gbit
 	[1000, 2500],
 	// up to 5Gbit
@@ -20,7 +22,7 @@ const speedTiers = [
 	[10000, 100000]
 ];
 
-const server = "localhost:1256";
+const server = "sonic.nyble.dev:1256";
 
 let worker = undefined;
 
@@ -33,11 +35,15 @@ const startButton = {
 
 const download = {
 	'speed': document.getElementById('download-speed'),
-	'meter': document.getElementById('download-meter-inner')
+	'meter': document.getElementById('download-meter-inner'),
+	'range-low': document.getElementById('download-range-low'),
+	'range-high': document.getElementById('download-range-high')
 };
 const upload = {
 	'speed': document.getElementById('upload-speed'),
-	'meter': document.getElementById('upload-meter-inner')
+	'meter': document.getElementById('upload-meter-inner'),
+	'range-low': document.getElementById('upload-range-low'),
+	'range-high': document.getElementById('upload-range-high')
 };
 const ping = document.getElementById('ping');
 
@@ -148,6 +154,8 @@ function displayThroughput(msg, display) {
 
 	let range = pickBestRange(throughput);
 	let percent = ((throughput - range[0]) / (range[1] - range[0])) * 100;
+	display["range-low"].innerText = range[0] + " Mbps";
+	display["range-high"].innerText = range[1] + " Mbps";
 	display.meter.style.width = `${Math.min(percent, 100)}%`;
 }
 

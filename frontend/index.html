@@ -11,17 +11,27 @@
 	<main>
 		<h1>oh no!<br>it's speed testing time</h1>
 
-		<section id="numbers">
+		<section class="speed-container">
 			<a id="download-speed" class="speed">0 Mbps</a>
+			<h2>download</h2>
 			<div id="download-meter" class="meter">
 				<div id="download-meter-inner" class="meter-inner"></div>
 			</div>
+			<p id="download-range-low">0Mbps</p>
+			<p id="download-range-high">1Mbps</p>
+		</section>
+
+		<section class="speed-container">
 			<a id="upload-speed" class="speed">0 Mbps</a>
+			<h2>upload</h2>
 			<div id="upload-meter" class="meter">
 				<div id="upload-meter-inner" class="meter-inner"></div>
 			</div>
-			<a id="ping">0ms</a>
+			<p id="upload-range-low">0Mbps</p>
+			<p id="upload-range-high">1Mbps</p>
 		</section>
+
+		<a id="ping">0ms</a>
 
 		<button onclick="run()" id="start-button">
 			Test My Speeds!
